@@ -69,4 +69,4 @@ if __name__ == '__main__':
 
     while True:
         write_to_csv(filename)
-        systime.sleep(randint(1, 1800))
+        systime.sleep(randint(1, 600))
