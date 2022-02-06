@@ -14,9 +14,13 @@ def get_processes(filter_processes=[], exclude_processes=[]):
         process = process.info
         process['open_files'] = len(process['open_files']) if process['open_files'] else 0
         process['connections'] = len(process['connections']) if process['connections'] else 0
-        process['cmdline'] = ' '.join(process['cmdline']) if process['cmdline'] else ''
+        process['cmdline'] = ' '.join(process['cmdline']) if process['cmdline'] else None
         process['dttm'] = dttm
-        process['parent_name'] = ps.Process(process['ppid']).name()
+        try:
+            parent_name = ps.Process(process['ppid']).name()
+        except:
+            parent_name = None
+        process['parent_name'] = parent_name
 
         return process
     
