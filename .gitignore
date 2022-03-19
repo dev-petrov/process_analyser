@@ -1,4 +1,6 @@
 env
 venv
-data.csv
+*.csv
 __pycache__
+anomaly.db
+.DS_store
