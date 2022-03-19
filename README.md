@@ -66,7 +66,7 @@ python collect.py --collector db --interval 30
 - `--logger_filename` - название для файлового логера
 - `--aggregator` - тип [агрегатора](#aggregators)
 - `--detector` - тип [детектора](#algorythms)
-- `--data_getter` - тип [получения данных](#datagetters)
+- `--data_getter` - тип [получения данных](#data_getters)
 - `--verbose` - выводить дополнительную информацию
 
 #### Пример использования
