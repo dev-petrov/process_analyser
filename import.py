@@ -1,7 +1,8 @@
 import argparse
 import pandas as pd
+import numpy as np
 from sqlalchemy.orm import Session
-from db import RawValue, engine
+from db import RawCleanedValue, engine
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Import data helper')
@@ -29,15 +30,23 @@ if __name__ == '__main__':
 
     print('Importing...')
 
-    with Session(engine) as session, session.begin():
+    with Session(engine) as session:
         # TODO check for duplicates
         df.dttm = pd.to_datetime(df.dttm, unit='s')
         df.create_time = pd.to_datetime(df.create_time, unit='s')
-        session.add_all(
-            [
-                RawValue(**kwargs)
-                for kwargs in df.to_dict('records')
-            ]
-        )
+        total_rows = len(df)
+        chunks = np.array_split(df.to_dict('records'), int(total_rows / 10000) + 1)
+        del df
+        added_rows = 0
+        for chunk in chunks:
+            with session.begin():
+                session.add_all(
+                    [
+                        RawCleanedValue(**kwargs)
+                        for kwargs in chunk
+                    ]
+                )
+                added_rows += len(chunk)
+                print(f"Added {round((added_rows / total_rows) * 100, 2)}% rows.")
 
-    print(f'Successfully imported {len(df)} rows.')
+    print(f'Successfully imported {total_rows} rows.')

@@ -3,11 +3,7 @@ import pandas as pd
 import threading
 from datetime import datetime
 
-class BaseGetter:
-    def get_data(self, *args, **kwargs):
-        raise NotImplementedError()
-
-class ProcessGetter(BaseGetter):
+class ProcessGetter:
     def __init__(self, filter_processes=[], exclude_processes=[]):
         self.filter_processes = filter_processes
         self.exclude_processes = exclude_processes

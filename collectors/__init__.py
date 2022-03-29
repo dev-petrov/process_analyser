@@ -4,14 +4,12 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from data_getters import ProcessGetter
 
-from db import RawValue, engine
+from db import engine
 
 class BaseCollector:
-    def __init__(self, process_getter_obj=None, verbose=False):
-        if not process_getter_obj:
-            process_getter_obj = ProcessGetter()
+    def __init__(self, verbose=False):
         self.verbose = verbose
-        self.process_getter = process_getter_obj
+        self.process_getter = ProcessGetter()
         self.tz_offset = timedelta(seconds=LocalTimezone().utcoffset(datetime.now()).seconds)
 
     def _collect(self, data):
@@ -41,13 +39,17 @@ class CsvCollector(BaseCollector):
         return f"CsvCollector, filename: {self.filename}"
 
 class DBCollector(BaseCollector):
-    def _collect(self, data):
+    def __init__(self, raw_value_cls, *args, **kwargs):
+        self.db_cls = raw_value_cls
+        super().__init__(*args, **kwargs)
+
+    def _collect(self, data: pd.DataFrame):
         with Session(engine) as session, session.begin():
             data.dttm = pd.to_datetime(data.dttm, unit='s')
             data.create_time = pd.to_datetime(data.create_time, unit='s')
             session.add_all(
                 [
-                    RawValue(**kwargs)
+                    self.db_cls(**kwargs)
                     for kwargs in data.to_dict('records')
                 ]
             )

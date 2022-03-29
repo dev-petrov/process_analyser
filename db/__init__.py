@@ -8,14 +8,15 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base
 
-engine = create_engine('sqlite:///anomaly.db')
+# engine = create_engine('sqlite:///anomaly.db')
+engine = create_engine('postgresql+psycopg2://anton:anton@localhost:38000/anomaly')
 Base = declarative_base()
 
-class RawValue(Base):
-    __tablename__ = 'raw_values'
-    
+class BaseRawValue(Base):
+    __abstract__ = True
+
     id = Column(Integer, primary_key=True, autoincrement=True)
-    dttm = Column(DateTime) 
+    dttm = Column(DateTime, index=True)
     pid = Column(Integer)
     name = Column(String(512))
     username = Column(String(256))
@@ -33,6 +34,11 @@ class RawValue(Base):
     connections = Column(Integer) 
     open_files = Column(Integer)
 
+class RawValue(BaseRawValue):
+    __tablename__ = 'raw_values'
+    
+class RawCleanedValue(BaseRawValue):
+    __tablename__ = 'raw_cleaned_values'
 
 class AnomalyLog(Base):
     __tablename__ = 'anomaly_logs'

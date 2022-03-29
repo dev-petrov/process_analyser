@@ -1,15 +1,13 @@
-import pandas as pd
+from copy import deepcopy
 
-class BaseAnomalyDetector:
+class AnomalyDetector:
+    _clean_data = []
 
-    clean_data = []
+    def fit(self, data: list):
+        self._clean_data = deepcopy(data)
 
-    def fit(self, data: pd.DataFrame):
-        self.clean_data = data.copy()
-
-    def detect(self, row):
+    def detect(self, data: list):
         return []
-
-class DefaultAnomalyDetector(BaseAnomalyDetector):
+    
     def __str__(self):
         return "DefaultAnomalyDetector"
