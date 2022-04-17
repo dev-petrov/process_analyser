@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/dev-petrov/process_analyser/branch/master/graph/badge.svg?token=CQM9I7ASTH)](https://codecov.io/gh/dev-petrov/process_analyser)
+[![CI](https://github.com/dev-petrov/process_analyser/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/dev-petrov/process_analyser/actions/workflows/python-app.yml)
 
 # Детектор аномальных состояний сервера
 
