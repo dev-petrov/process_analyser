@@ -5,7 +5,7 @@ from detector.settings import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_PREFIX,
 
 def get_engine(
     test=False, host=DB_HOST, name=DB_NAME, password=DB_PASSWORD, port=DB_PORT, prefix=DB_PREFIX, user=DB_USER
-): # pragma: no cover
+):  # pragma: no cover
     db_url = None
     name = f"{name}_test" if test else name
     if "sqlite" in prefix:
@@ -27,7 +27,7 @@ def get_engine(
     return create_engine(db_url)
 
 
-def extract_time(expr, db_prefix=DB_PREFIX): # pragma: no cover
+def extract_time(expr, db_prefix=DB_PREFIX):  # pragma: no cover
     if "sqlite" in db_prefix:
         return func.TIME(expr)
 

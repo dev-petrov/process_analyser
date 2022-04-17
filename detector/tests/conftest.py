@@ -14,7 +14,7 @@ register(RawValueFactory)
 
 
 @pytest.fixture(scope="session")
-def db_connection(): # pragma: no cover
+def db_connection():  # pragma: no cover
     if "sqlite" in DB_PREFIX:
         engine = get_engine(test=True)
         yield engine.connect()

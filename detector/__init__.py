@@ -4,7 +4,7 @@ from .commands import CollectCommand, DetectCommand, ImportCommand, ShellCommand
 from .commands.base_command import BaseCommand
 
 
-class Detector: # pragma: no cover
+class Detector:  # pragma: no cover
     available_commands = {
         "import": ImportCommand,
         "detect": DetectCommand,

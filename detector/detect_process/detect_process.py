@@ -11,7 +11,7 @@ from detector.db import RawValue
 from detector.loggers.base_logger import BaseAnomalyLogger
 
 
-class DetectProcess: # pragma: no cover
+class DetectProcess:  # pragma: no cover
     _logger: BaseAnomalyLogger
     _data_getter: ProcessGetter
     _collector: DBCollector
