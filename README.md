@@ -1,6 +1,8 @@
+[![codecov](https://codecov.io/gh/dev-petrov/process_analyser/branch/master/graph/badge.svg?token=CQM9I7ASTH)](https://codecov.io/gh/dev-petrov/process_analyser)
+
 # Детектор аномальных состояний сервера
 
-## Описание модулей
+## Описание компонентов
 
 ### aggregators
 Содержит класс агрегации данных.
@@ -29,42 +31,59 @@ Cодержит классы сбора данных.
 - db - класс для логирования в базу данных
 - file - класс для логирования в файл
 
-### collect.py
-Скрипт для сбора исторических данных.
+### main.py
 
-Параметры скрипта:
+Скрипт для запуска [команд](#команды)
+
+## Команды
+
+### collect
+
+#### Описание
+
+Запуск процесса сбора исторических данных.
+
+#### Использование
+
+```bash
+python main.py collect --collector csv --filename data.csv
+```
+
+#### Параметры
+
 - `--collector` - тип [сборщика данных](#collectors)
 - `--filename` - название файла для csv сборщика
 
-#### Пример использования
+### detect
+
+#### Описание
+
+Запуск процесса детектирования аномалий.
+
+#### Использование
 ```bash
-python collect.py --collector db
+python main.py detect --logger file --verbose true
 ```
-Данные будут собираться сразу в базу данных.
 
-### detect.py
-Основной модуль для детектирования аномалий.
+#### Параметры
 
-Параметры модуля:
 - `--logger` - тип [логера](#loggers)
 - `--logger_filename` - название для файлового логера
 - `--verbose` - выводить дополнительную информацию
 
-#### Пример использования
+### import
+
+#### Описание
+
+Импорт данных из csv в базу данных.
+
+#### Использование
+
 ```bash
-python detect.py --logger file --verbose true
+python main.py import --file_type csv --filename data.csv
 ```
-В случае если аномалии будут обнаружены, они будут залогированы в файл.
 
-### import.py
-Скрипт для импорта данных из csv в базу данных.
+#### Параметры
 
-Параметры скрипта:
 - `--file_type` - тип импортируемого файла (csv, xlsx)
 - `--filename` - название файла из корого импортируем
-
-#### Пример использования
-```bash
-python import.py --file_type csv --filename data.csv
-```
-Импортируем данные из csv файла data.csv
