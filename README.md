@@ -1,7 +1,21 @@
 [![codecov](https://codecov.io/gh/dev-petrov/process_analyser/branch/master/graph/badge.svg?token=CQM9I7ASTH)](https://codecov.io/gh/dev-petrov/process_analyser)
-[![CI tests](https://github.com/dev-petrov/process_analyser/actions/workflows/ci-tests.yml/badge.svg?branch=master)](https://github.com/dev-petrov/process_analyser/actions/workflows/ci-tests.yml)
+[![CI tests](https://github.com/dev-petrov/process_analyser/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/dev-petrov/process_analyser/actions/workflows/ci-tests.yml)
 
 # Детектор аномальных состояний сервера
+
+- [Описание компонентов](#описание-компонентов)
+  * [aggregators](#aggregators)
+  * [algorythms](#algorythms)
+  * [collectors](#collectors)
+  * [data_getters](#data-getters)
+  * [db](#db)
+  * [loggers](#loggers)
+  * [main.py](#mainpy)
+- [Команды](#команды)
+  * [collect](#collect)
+  * [detect](#detect)
+  * [import](#import)
+  * [shell](#shell)
 
 ## Описание компонентов
 
@@ -88,3 +102,15 @@ python main.py import --file_type csv --filename data.csv
 
 - `--file_type` - тип импортируемого файла (csv, xlsx)
 - `--filename` - название файла из корого импортируем
+
+### shell
+
+#### Описание
+
+Запускает IPython и конфигурирует подключение к базе данных.
+
+#### Использование
+
+```bash
+python main.py shell
+```
