@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from detector.loggers import ConsoleAnomalyLogger
 
 
@@ -6,8 +8,10 @@ def test_console_logger(mocker, log_data):
 
     patched_print = mocker.patch("detector.loggers.console_logger.print")
 
-    logger.log(log_data)
+    dttm = datetime.now()
 
-    patched_print.assert_called_once_with(str(log_data))
+    logger.log(log_data, dttm)
+
+    patched_print.assert_called_once_with(dttm, str(log_data))
 
     assert str(logger) == "ConsoleAnomalyLogger"

@@ -7,3 +7,4 @@ anomaly.db
 .coverage
 .pytest_cache
 cov.xml
+node_modules

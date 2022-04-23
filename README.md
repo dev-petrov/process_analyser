@@ -3,19 +3,31 @@
 
 # Детектор аномальных состояний сервера
 
-- [Описание компонентов](#описание-компонентов)
-  * [aggregators](#aggregators)
-  * [algorythms](#algorythms)
-  * [collectors](#collectors)
-  * [data_getters](#data-getters)
-  * [db](#db)
-  * [loggers](#loggers)
-  * [main.py](#mainpy)
-- [Команды](#команды)
-  * [collect](#collect)
-  * [detect](#detect)
-  * [import](#import)
-  * [shell](#shell)
+- [Детектор аномальных состояний сервера](#детектор-аномальных-состояний-сервера)
+  - [Описание компонентов](#описание-компонентов)
+    - [aggregators](#aggregators)
+    - [algorythms](#algorythms)
+    - [collectors](#collectors)
+    - [data_getters](#data_getters)
+    - [db](#db)
+    - [loggers](#loggers)
+    - [main.py](#mainpy)
+  - [Команды](#команды)
+    - [collect](#collect)
+      - [Описание](#описание)
+      - [Использование](#использование)
+      - [Параметры](#параметры)
+    - [detect](#detect)
+      - [Описание](#описание-1)
+      - [Использование](#использование-1)
+      - [Параметры](#параметры-1)
+    - [import](#import)
+      - [Описание](#описание-2)
+      - [Использование](#использование-2)
+      - [Параметры](#параметры-2)
+    - [shell](#shell)
+      - [Описание](#описание-3)
+      - [Использование](#использование-3)
 
 ## Описание компонентов
 
@@ -83,7 +95,7 @@ python main.py detect --logger file --verbose true
 #### Параметры
 
 - `--logger` - тип [логера](#loggers)
-- `--logger_filename` - название для файлового логера
+- `--logger_filename` - название файла для файлового логера
 - `--verbose` - выводить дополнительную информацию
 
 ### import

@@ -1,3 +1,5 @@
+import datetime
+
 from .base_logger import BaseAnomalyLogger
 
 
@@ -9,9 +11,9 @@ class FileAnomalyLogger(BaseAnomalyLogger):
             file_name = "anomaly_logger.log"
         self._file_name = file_name
 
-    def _log(self, log_data: str) -> None:
+    def _log(self, log_data: str, dttm: datetime) -> None:
         with open(self._file_name, "a") as file:
-            file.write(log_data)
+            file.write(f"{dttm}: {log_data}")
 
     def __str__(self) -> str:
         return f"FileAnomalyLogger, filename: {self._file_name}"

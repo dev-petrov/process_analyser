@@ -16,12 +16,12 @@ class DetectCommand(BaseCommand):
             "--logger_filename",
             help="File name for file logger",
             type=str,
-            default=getattr(settings, "DETECTOR_LOGGER_FILENAME", None),
+            default=settings.DETECTOR_LOGGER_FILENAME,
         )
         parser.add_argument(
             "--logger",
             help="Type of logger",
-            default=getattr(settings, "DETECTOR_LOGGER", "console"),
+            default=settings.DETECTOR_LOGGER,
             choices=["console", "db", "file"],
         )
         parser.add_argument("--detector_file", help="Detector file", type=str, default=None)
@@ -33,8 +33,8 @@ class DetectCommand(BaseCommand):
 
         print("Starting detector service.")
         print(f"Using logger: {logger}")
-        verbose = options.get("verbose", getattr(settings, "DETECTOR_VERBOSE", False))
-        detector_file = options.get("detector_file", getattr(settings, "DETECTOR_FILE", None))
+        verbose = options.get("verbose", settings.DETECTOR_VERBOSE)
+        detector_file = options.get("detector_file", settings.DETECTOR_FILE)
 
         detect_process = DetectProcess(
             logger,

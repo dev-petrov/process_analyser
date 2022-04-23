@@ -31,11 +31,11 @@ AGGREGATION_SETTINGS = AggregationSetting(
         ),
         SimpleAggregation(
             "sum",
-            ("num_threads", "connections", "open_files", "cpu_percent", "memory_percent"),
+            ("cpu_percent", "memory_percent", "num_threads", "connections", "open_files"),
         ),
         SimpleAggregation(
             "max",
-            ("cpu_percent", "connections", "memory_percent", "open_files"),
+            ("cpu_percent", "memory_percent", "num_threads", "connections", "open_files"),
         ),
     ],
     custom_agg=[
@@ -48,8 +48,24 @@ AGGREGATION_SETTINGS = AggregationSetting(
             lambda x: func.count(x.status).filter(x.status == "sleeping"),
         ),
         CustomAggregation(
+            "running_status_count",
+            lambda x: func.count(x.status).filter(x.status == "running"),
+        ),
+        CustomAggregation(
+            "zombie_status_count",
+            lambda x: func.count(x.status).filter(x.status == "zombie"),
+        ),
+        CustomAggregation(
+            "disk_sleep_status_count",
+            lambda x: func.count(x.status).filter(x.status == "disk_sleep"),
+        ),
+        CustomAggregation(
             "root_processes_count",
             lambda x: func.count(x.username).filter(x.username == "root"),
+        ),
+        CustomAggregation(
+            "system_processes_count",
+            lambda x: func.count(x.username).filter(x.username.startswith("system")),
         ),
         CustomAggregation(
             "time_of_day",
@@ -65,42 +81,3 @@ AGGREGATION_SETTINGS = AggregationSetting(
     ],
     qualitatives=["time_of_day"],
 )
-
-# CustomAggregation(
-#     "idle_status_count_distinct",
-#     lambda x: func.count(distinct(x.pid)).filter(x.status == "idle"),
-# ),
-# CustomAggregation(
-#     "running_status_count",
-#     lambda x: func.count(x.status).filter(x.status == "running"),
-# ),
-# CustomAggregation(
-#     "running_status_count_distinct",
-#     lambda x: func.count(distinct(x.pid)).filter(x.status == "running"),
-# ),
-# CustomAggregation(
-#     "sleeping_status_count_distinct",
-#     lambda x: func.count(distinct(x.pid)).filter(x.status == "sleeping"),
-# ),
-# CustomAggregation(
-#     "root_processes_count_distinct",
-#     lambda x: func.count(distinct(x.pid)).filter(x.username == "root"),
-# ),
-# {
-#     "simple_agg": [
-#         ("avg", ("cpu_percent", "memory_percent", "num_threads", "connections", "open_files")),  # nice
-#         ("sum", ("num_threads", "connections", "open_files")),
-#         # ('min', ('connections', 'open_files')), # cpu_percent, memory_percent, num_threads, nice
-#         ("max", ("cpu_percent", "connections")),  # memory_percent, num_threads, nice, open_files_max
-#     ],
-#     "custom_agg": [
-#         # ('zombie_status_count', lambda x: func.count(x.status).filter(x.status == 'zombie')),
-#         # ('zombie_status_count_distinct', lambda x: func.count(distinct(x.pid)).filter(x.status == 'zombie')),
-#         # ('disk_sleep_status_count', lambda x: func.count(x.status).filter(x.status == 'disk_sleep')),
-#         # ('disk_sleep_status_count_distinct',
-# lambda x: func.count(distinct(x.pid)).filter(x.status == 'disk_sleep')),
-#         # ('system_processes_count', lambda x: func.count(x.username).filter(x.username.startswith('system'))),
-#         # ('system_processes_count_distinct', lambda x: func.count(distinct(x.pid))
-# .filter(x.username.startswith('system'))),
-#     ],
-# }
