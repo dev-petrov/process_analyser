@@ -65,7 +65,7 @@ AGGREGATION_SETTINGS = AggregationSetting(
         ),
         CustomAggregation(
             "system_processes_count",
-            lambda x: func.count(x.username).filter(x.username.startswith("system")),
+            lambda x: func.count(x.username).filter(x.username.startswith("sys")),
         ),
         CustomAggregation(
             "time_of_day",

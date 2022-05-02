@@ -66,12 +66,12 @@ class DetectProcess:  # pragma: no cover
         dttm, data = self._get_data()
         self._collect(data)
 
-        # if self._run_cnt + 1 < self._aggregator.period_length:
-        #     self._run_cnt += 1
-        #     self._print_if_verbose(
-        #         f"Collected {self._run_cnt} portions of {self._aggregator.period_length}. Skipping detecting..."
-        #     )
-        #     return
+        if self._run_cnt + 1 < self._aggregator.period_length:
+            self._run_cnt += 1
+            self._print_if_verbose(
+                f"Collected {self._run_cnt} portions of {self._aggregator.period_length}. Skipping detecting..."
+            )
+            return
 
         self._print_if_verbose("Detecting")
 
