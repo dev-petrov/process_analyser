@@ -1,4 +1,3 @@
-import os
 import threading
 from datetime import datetime
 
@@ -29,14 +28,10 @@ class ProcessGetter:
 
     def get_data(self) -> tuple[datetime, pd.DataFrame]:
         dttm = datetime.now().timestamp()
-        client_process_id = None
-        if settings.CLIENT_PID and os.path.exists(settings.CLIENT_PID):  # pragma: no cover
-            with open(settings.CLIENT_PID) as f:
-                client_process_id = int(f.read())
 
         def _filter_process(process: ps.Process) -> bool:
             process = process.info
-            if process["pid"] in [self._current_pid, client_process_id]:
+            if process["pid"] == self._current_pid or process["exe"] == settings.CLIENT_EXE_PATH:
                 return False
 
             return True
