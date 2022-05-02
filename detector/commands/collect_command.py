@@ -27,10 +27,12 @@ class CollectCommand(BaseCommand):
 
         print("Collecting...")
 
+        next_run_at = datetime.now()
+
         while True:
-            next_run_at = datetime.now() + timedelta(seconds=60)
+            next_run_at = next_run_at + timedelta(seconds=60)
             dttm, data = process_getter.get_data()
             collector.collect(data)
+            print(f"Sleeping...")
             sleep_secs = (next_run_at - datetime.now()).total_seconds()
-            print(f"Sleeping {sleep_secs} secs...")
             systime.sleep(sleep_secs)
