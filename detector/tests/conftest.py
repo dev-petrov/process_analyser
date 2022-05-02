@@ -20,7 +20,7 @@ def db_connection():  # pragma: no cover
         yield engine.connect()
     else:
         db_name = f"{DB_NAME}_test"
-        sys.stdout.write(f"Creating test database {db_name}")
+        print(f"Creating test database {db_name}")
         engine = get_engine(test=True, name=db_name)
         if database_exists(engine.url):  # pragma: no cover
             answer = input(f"Database {db_name} already exists. Destroy? y/N: ")
@@ -31,7 +31,7 @@ def db_connection():  # pragma: no cover
         create_database(engine.url)
         yield engine.connect()
 
-        sys.stdout.write(f"Destroying test database {db_name}")
+        print(f"Destroying test database {db_name}")
         drop_database(engine.url)
 
 

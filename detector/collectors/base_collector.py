@@ -23,4 +23,4 @@ class BaseCollector(abc.ABC):
         self._collect(data)
 
         if self._verbose:  # pragma: no cover
-            sys.stdout.write(f"{dttm + self._tz_offset}: Collected {len(data)} rows")
+            print(f"{dttm + self._tz_offset}: Collected {len(data)} rows")

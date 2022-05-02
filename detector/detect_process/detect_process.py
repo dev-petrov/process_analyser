@@ -34,17 +34,17 @@ class DetectProcess:  # pragma: no cover
         self._detector = AnomalyDetector()
         self._verbose = verbose
         if not detector_file:
-            sys.stdout.write("Fit detector")
+            print("Fit detector")
             self._detector.fit(self._aggregator.get_train_data())
-            sys.stdout.write("Detector fitted")
+            print("Detector fitted")
         else:
-            sys.stdout.write("Loading detector")
+            print("Loading detector")
             self._detector.load_model(detector_file)
-            sys.stdout.write("Detector loaded")
+            print("Detector loaded")
 
     def _print_if_verbose(self, data: Any) -> None:
         if self._verbose:
-            sys.stdout.write(data)
+            print(data)
 
     def _get_data(self) -> pd.DataFrame:
         return self._data_getter.get_data()
