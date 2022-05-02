@@ -1,6 +1,5 @@
 import abc
 from datetime import datetime, timedelta
-import sys
 
 import pandas as pd
 from pytz.reference import LocalTimezone

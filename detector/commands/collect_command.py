@@ -1,4 +1,3 @@
-import sys
 import time as systime
 from argparse import ArgumentParser
 from datetime import datetime, timedelta

@@ -1,5 +1,4 @@
 from datetime import datetime
-import sys
 
 from .base_logger import BaseAnomalyLogger
 

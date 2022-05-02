@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any
 
-import sys
 import pandas as pd
 
 from detector.aggregator import Aggregator

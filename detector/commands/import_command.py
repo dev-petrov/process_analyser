@@ -1,6 +1,5 @@
 import os
 from argparse import ArgumentParser
-import sys
 
 import numpy as np
 import pandas as pd
