@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+import sys
 
 import numpy as np
 import pandas as pd
@@ -26,7 +27,7 @@ class ImportCommand(BaseCommand):
         drop_previous = options.get("drop_previous", False)
         filename = options["filename"]
 
-        print(f"Reading {file_type} file...")
+        sys.stdout.write(f"Reading {file_type} file...")
 
         df = readers[file_type](
             filename,
@@ -51,7 +52,7 @@ class ImportCommand(BaseCommand):
             ],
         )
 
-        print("Importing...")
+        sys.stdout.write("Importing...")
 
         with session_scope() as session:
             # TODO check for duplicates
@@ -69,6 +70,6 @@ class ImportCommand(BaseCommand):
                     session.add_all([RawCleanedValue(**kwargs) for kwargs in chunk])
                     added_rows += len(chunk)
                     os.system("clear")
-                    print(f"Added {round((added_rows / total_rows) * 100, 2)}% rows.")
+                    sys.stdout.write(f"Added {round((added_rows / total_rows) * 100, 2)}% rows.")
 
-        print(f"Successfully imported {total_rows} rows.")
+        sys.stdout.write(f"Successfully imported {total_rows} rows.")

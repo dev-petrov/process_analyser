@@ -1,3 +1,4 @@
+import sys
 import time as systime
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
@@ -22,15 +23,15 @@ class CollectCommand(BaseCommand):
         collector: BaseCollector = self.get_instance("collector", options, instance_kwargs={"verbose": True})
         process_getter = ProcessGetter()
 
-        print("Starting collector service.")
-        print(f"Using collector: {collector}")
+        sys.stdout.write("Starting collector service.")
+        sys.stdout.write(f"Using collector: {collector}")
 
-        print("Collecting...")
+        sys.stdout.write("Collecting...")
 
         while True:
             next_run_at = datetime.now() + timedelta(seconds=60)
             dttm, data = process_getter.get_data()
             collector.collect(data)
             sleep_secs = (next_run_at - datetime.now()).total_seconds()
-            print(f"Sleeping {sleep_secs} secs...")
+            sys.stdout.write(f"Sleeping {sleep_secs} secs...")
             systime.sleep(sleep_secs)

@@ -1,3 +1,4 @@
+import sys
 import time as systime
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
@@ -31,8 +32,8 @@ class DetectCommand(BaseCommand):
 
         logger = self.get_instance("logger", options)
 
-        print("Starting detector service.")
-        print(f"Using logger: {logger}")
+        sys.stdout.write("Starting detector service.")
+        sys.stdout.write(f"Using logger: {logger}")
         verbose = options.get("verbose", settings.DETECTOR_VERBOSE)
         detector_file = options.get("detector_file", settings.DETECTOR_FILE)
 
@@ -42,11 +43,11 @@ class DetectCommand(BaseCommand):
             detector_file=detector_file,
         )
 
-        print("Detector service started.")
+        sys.stdout.write("Detector service started.")
 
         while True:
             next_run_at = datetime.now() + timedelta(seconds=60)
             detect_process.run()
             sleep_secs = (next_run_at - datetime.now()).total_seconds()
-            print(f"Sleeping {sleep_secs} secs...")
+            sys.stdout.write(f"Sleeping {sleep_secs} secs...")
             systime.sleep(sleep_secs)

@@ -1,5 +1,6 @@
 import abc
 from datetime import datetime, timedelta
+import sys
 
 import pandas as pd
 from pytz.reference import LocalTimezone
@@ -22,4 +23,4 @@ class BaseCollector(abc.ABC):
         self._collect(data)
 
         if self._verbose:  # pragma: no cover
-            print(f"{dttm + self._tz_offset}: Collected {len(data)} rows")
+            sys.stdout.write(f"{dttm + self._tz_offset}: Collected {len(data)} rows")

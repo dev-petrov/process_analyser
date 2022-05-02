@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any
 
+import sys
 import pandas as pd
 
 from detector.aggregator import Aggregator
@@ -33,17 +34,17 @@ class DetectProcess:  # pragma: no cover
         self._detector = AnomalyDetector()
         self._verbose = verbose
         if not detector_file:
-            print("Fit detector")
+            sys.stdout.write("Fit detector")
             self._detector.fit(self._aggregator.get_train_data())
-            print("Detector fitted")
+            sys.stdout.write("Detector fitted")
         else:
-            print("Loading detector")
+            sys.stdout.write("Loading detector")
             self._detector.load_model(detector_file)
-            print("Detector loaded")
+            sys.stdout.write("Detector loaded")
 
     def _print_if_verbose(self, data: Any) -> None:
         if self._verbose:
-            print(data)
+            sys.stdout.write(data)
 
     def _get_data(self) -> pd.DataFrame:
         return self._data_getter.get_data()
