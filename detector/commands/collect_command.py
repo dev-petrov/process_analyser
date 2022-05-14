@@ -33,6 +33,6 @@ class CollectCommand(BaseCommand):
             next_run_at = next_run_at + timedelta(seconds=60)
             dttm, data = process_getter.get_data()
             collector.collect(data)
-            print(f"Sleeping...")
+            print("Sleeping...")
             sleep_secs = (next_run_at - datetime.now()).total_seconds()
             systime.sleep(sleep_secs)

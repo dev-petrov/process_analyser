@@ -49,6 +49,6 @@ class DetectCommand(BaseCommand):
         while True:
             next_run_at = next_run_at + timedelta(seconds=60)
             detect_process.run()
-            print(f"Sleeping...")
+            print("Sleeping...")
             sleep_secs = (next_run_at - datetime.now()).total_seconds()
             systime.sleep(sleep_secs)

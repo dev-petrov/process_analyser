@@ -32,12 +32,15 @@ class ProcessGetter:
 
         def _filter_process(process: ps.Process) -> bool:
             process = process.info
-            if process["pid"] == self._current_pid or (
-                settings.EXCLUDE_EXE and re.match(settings.EXCLUDE_EXE, process["exe"])
-            ):
-                return False
-
-            return True
+            return not (
+                process["pid"] == self._current_pid
+                or (settings.EXCLUDE_EXE and re.match(settings.EXCLUDE_EXE, process["exe"]))
+                or (
+                    settings.EXCLUDE_COMMAND
+                    and process["cmdline"]
+                    and re.match(settings.EXCLUDE_COMMAND, " ".join(process["cmdline"]))
+                )
+            )
 
         processes = list(
             map(
