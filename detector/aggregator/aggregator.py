@@ -37,7 +37,7 @@ class Aggregator:
             custom_agg.func(raw_value_cls).label(custom_agg.label)
             for custom_agg in self.aggregation_settings.custom_agg
         ]
-        dttm_from = dttm - timedelta(minutes=self.period_length)
+        dttm_from = dttm - timedelta(minutes=self.period_length) + timedelta(seconds=2)
         dttm_to = dttm
         return session.query(*aggregation_settings).filter(
             raw_value_cls.dttm > dttm_from,

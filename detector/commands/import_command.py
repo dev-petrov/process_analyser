@@ -1,4 +1,4 @@
-import os
+from curses import wrapper, window
 from argparse import ArgumentParser
 
 import numpy as np
@@ -16,19 +16,18 @@ class ImportCommand(BaseCommand):
         parser.add_argument("--file_type", help="Type of file", default="csv", choices=["csv", "xlsx"])
         parser.add_argument("--filename", help="File name", type=str, required=True)
         parser.add_argument("--drop_previous", help="Drop previous rows", type=bool, default=False)
+    
+    def _handle(self, stdscr: window, read_func, filename, drop_previous=False):
+        stdscr.clear()
+        stdscr.refresh()
+        rows, cols = stdscr.getmaxyx()
 
-    def handle(self, *args, **options):
-        readers = {
-            "csv": pd.read_csv,
-            "xlsx": pd.read_excel,
-        }
-        file_type = options["file_type"]
-        drop_previous = options.get("drop_previous", False)
-        filename = options["filename"]
+        row_pos = round(rows / 2)
 
-        print(f"Reading {file_type} file...")
+        stdscr.addstr(row_pos, 0, "Reading file...")
+        stdscr.refresh()
 
-        df = readers[file_type](
+        df = read_func(
             filename,
             names=[
                 "dttm",
@@ -51,11 +50,11 @@ class ImportCommand(BaseCommand):
             ],
         )
 
-        print("Importing...")
-
         with session_scope() as session:
             # TODO check for duplicates
             if drop_previous:
+                stdscr.addstr(row_pos, 0, "Dropping previous...")
+                stdscr.refresh()
                 with session.begin():
                     session.query(RawCleanedValue).delete()
             df.dttm = pd.to_datetime(df.dttm, unit="s")
@@ -64,11 +63,27 @@ class ImportCommand(BaseCommand):
             chunks = np.array_split(df.to_dict("records"), int(total_rows / 10000) + 1)
             del df
             added_rows = 0
+            MAX_SPACES = cols - 10 - len(str(total_rows)) * 2 - len("Importing ")
+            stdscr.addstr(row_pos, 0, "Importing...")
+            stdscr.refresh()
             for chunk in chunks:
                 with session.begin():
                     session.add_all([RawCleanedValue(**kwargs) for kwargs in chunk])
                     added_rows += len(chunk)
-                    os.system("clear")
-                    print(f"Added {round((added_rows / total_rows) * 100, 2)}% rows.")
+                    progress = round((added_rows / total_rows) * MAX_SPACES)
+                    stdscr.addstr(row_pos, 0, "Importing [" + "=" * progress + ">" + " " * (MAX_SPACES - progress) + f"] {added_rows} / {total_rows}")
+                    stdscr.refresh()
 
-        print(f"Successfully imported {total_rows} rows.")
+        stdscr.addstr(row_pos, 0, f"Successfully imported {total_rows} rows.")
+        stdscr.refresh()
+
+    def handle(self, *args, **options):
+        readers = {
+            "csv": pd.read_csv,
+            "xlsx": pd.read_excel,
+        }
+        file_type = options["file_type"]
+        drop_previous = options.get("drop_previous", False)
+        filename = options["filename"]
+
+        wrapper(self._handle, readers[file_type], filename, drop_previous=drop_previous)

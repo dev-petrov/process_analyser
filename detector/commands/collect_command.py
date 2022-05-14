@@ -14,7 +14,7 @@ class CollectCommand(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("--collector", help="Type of collector", default="csv", choices=["csv", "db"])
-        parser.add_argument("--filename", help="File name for csv collector", type=str)
+        parser.add_argument("--collector_filename", help="File name for csv collector", type=str)
 
     def handle(self, *args, **options):
         options["raw_values_cls"] = RawCleanedValue
