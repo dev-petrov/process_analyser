@@ -1,5 +1,5 @@
-from curses import wrapper, window
 from argparse import ArgumentParser
+from curses import window, wrapper
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ class ImportCommand(BaseCommand):
         parser.add_argument("--file_type", help="Type of file", default="csv", choices=["csv", "xlsx"])
         parser.add_argument("--filename", help="File name", type=str, required=True)
         parser.add_argument("--drop_previous", help="Drop previous rows", type=bool, default=False)
-    
+
     def _handle(self, stdscr: window, read_func, filename, drop_previous=False):
         stdscr.clear()
         stdscr.refresh()
@@ -71,7 +71,15 @@ class ImportCommand(BaseCommand):
                     session.add_all([RawCleanedValue(**kwargs) for kwargs in chunk])
                     added_rows += len(chunk)
                     progress = round((added_rows / total_rows) * MAX_SPACES)
-                    stdscr.addstr(row_pos, 0, "Importing [" + "=" * progress + ">" + " " * (MAX_SPACES - progress) + f"] {added_rows} / {total_rows}")
+                    stdscr.addstr(
+                        row_pos,
+                        0,
+                        "Importing ["
+                        + "=" * progress
+                        + ">"
+                        + " " * (MAX_SPACES - progress)
+                        + f"] {added_rows} / {total_rows}",
+                    )
                     stdscr.refresh()
 
         stdscr.addstr(row_pos, 0, f"Successfully imported {total_rows} rows.")

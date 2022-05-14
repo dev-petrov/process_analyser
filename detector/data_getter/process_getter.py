@@ -1,3 +1,4 @@
+import re
 import threading
 from datetime import datetime
 
@@ -31,7 +32,9 @@ class ProcessGetter:
 
         def _filter_process(process: ps.Process) -> bool:
             process = process.info
-            if process["pid"] == self._current_pid or process["exe"] == settings.CLIENT_EXE_PATH:
+            if process["pid"] == self._current_pid or (
+                settings.EXCLUDE_EXE and re.match(settings.EXCLUDE_EXE, process["exe"])
+            ):
                 return False
 
             return True

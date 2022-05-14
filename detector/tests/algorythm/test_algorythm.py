@@ -35,6 +35,9 @@ def test_algorythm():
     assert len(anomalies) == 1
     assert [anomalies[0].x1, anomalies[0].x2] == [7.4, 9.744]
 
+    anomalies = detector.detect(df.iloc[19:20, :].reset_index(), raise_exception=False)
+    assert len(anomalies) == 0
+
     exception_raised = False
 
     try:
