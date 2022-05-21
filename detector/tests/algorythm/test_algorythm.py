@@ -91,8 +91,8 @@ def test_splits_collection():
     assert str(splits) == (
         "[QuantitativeSplit(field='float', splits=[(1.1, 1.8352763819095477),"
         " (1.8352763819095477, 2.34)]), QuantitativeSplit(field='int', splits=[(0, 5), (5, 11)]), "
-        "QuantitativeSplit(field='int_no_min', splits=[(3, 3)]), "
         "QualitativeSplit(field='character', splits=[1, 2])]"
     )
 
     assert repr(splits) == str(splits)
+    assert len(splits) == 3

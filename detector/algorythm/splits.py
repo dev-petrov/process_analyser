@@ -23,10 +23,10 @@ class QuantitativeSplit(BaseSplit):
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:
         index = None
         for i, (min, max) in enumerate(self.splits):
-            if value >= min and value <= max:
+            if value >= min and value < max:
                 index = i
                 break
-        return index
+        return i if index is None and value == self.splits[i][1] else index
 
 
 class QualitativeSplit(BaseSplit):
@@ -55,46 +55,37 @@ class SplitsCollection:
 
     @classmethod
     def _append_quantitative(cls, splits: list[BaseSplit], field: str, values: pd.Series) -> list[BaseSplit]:
-        result = []
         serie = values.copy()
-        dtype = serie.dtype
-        maximum = serie.min()
-        minimums = cls._find_mininmums(serie)
-        if len(minimums):
-            maximum, _ = cls._get_interval(serie[serie <= minimums[0]], dtype == "int64")
-        else:
-            maximum, _ = cls._get_interval(serie, dtype == "int64")
-        for local_min in minimums:
-            minimum = maximum
-            maximum = local_min
-            if dtype == "int64":
-                maximum = round(maximum)
-            result.append((minimum, maximum))
-        minimum = maximum
-        maximum = serie.max() if serie.max() != maximum else maximum + 1
-        _, maximum = cls._get_interval(serie[serie >= minimum], dtype == "int64")
-        result.append((minimum, maximum))
+        need_round = serie.dtype == "int64"
+
+        def _round(x):
+            if need_round:
+                x = round(x)
+            return x
+
+        local_minimums = list(cls._find_mininmums(serie))
+
+        if not local_minimums:
+            return
+
+        local_minimums.insert(0, cls._get_interval(serie[serie < local_minimums[0]])[0])
+        local_minimums.append(cls._get_interval(serie[serie >= local_minimums[-1]])[1])
+
+        _splits = [(_round(local_minimums[i]), _round(local_minimums[i + 1])) for i in range(len(local_minimums) - 1)]
+
         splits.append(
             QuantitativeSplit(
                 field=field,
-                splits=result,
+                splits=[(mi, ma) for mi, ma in _splits if mi != ma],
             )
         )
         return splits
 
     @staticmethod
-    def _get_interval(data: pd.Series, need_round: bool) -> tuple[float, float]:
-        def _prepare_result(min, max):
-            if need_round:
-                min, max = round(min), round(max)
-            return min, max
-
+    def _get_interval(data: pd.Series) -> tuple[float, float]:
         if len(data) < 2:
-            return _prepare_result(data.min(), data.max())
-        return _prepare_result(
-            min(data.mean() - 3 * data.std(), data.min()),
-            max(data.mean() + 3 * data.std(), data.max()),
-        )
+            return data.min(), data.max()
+        return (min(data.mean() - 3 * data.std(), data.min()), max(data.mean() + 3 * data.std(), data.max()))
 
     @staticmethod
     def _find_mininmums(data: pd.Series) -> np.ndarray:
@@ -152,3 +143,6 @@ class SplitsCollection:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def __len__(self) -> int:
+        return len(self._splits)
