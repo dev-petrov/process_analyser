@@ -12,7 +12,7 @@ from detector.loggers.base_logger import BaseAnomalyLogger
 
 
 class DetectProcess:  # pragma: no cover
-    _logger: BaseAnomalyLogger
+    _loggers: list[BaseAnomalyLogger]
     _data_getter: ProcessGetter
     _collector: DBCollector
     _aggregator: Aggregator
@@ -22,13 +22,13 @@ class DetectProcess:  # pragma: no cover
 
     def __init__(
         self,
-        logger_obj: BaseAnomalyLogger,
+        loggers_objs: list[BaseAnomalyLogger],
         verbose=False,
         detector_file=None,
     ) -> None:
         self._data_getter = ProcessGetter()
         self._collector = DBCollector(RawValue)
-        self._logger = logger_obj
+        self._loggers = loggers_objs
         self._aggregator = Aggregator()
         self._detector = AnomalyDetector()
         self._verbose = verbose
@@ -53,7 +53,8 @@ class DetectProcess:  # pragma: no cover
         self._collector.collect(data)
 
     def _log(self, data: dict, dttm: datetime) -> None:
-        self._logger.log(data, dttm)
+        for logger in self._loggers:
+            logger.log(data, dttm)
 
     def _get_data_for_detect(self, dttm: datetime) -> pd.DataFrame:
         return self._aggregator.get_detect_data(dttm)

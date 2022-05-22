@@ -19,8 +19,10 @@ class DetectCommand(BaseCommand):
             default=settings.DETECTOR_LOGGER_FILENAME,
         )
         parser.add_argument(
+            "-l",
             "--logger",
             help="Type of logger",
+            nargs="+",
             default=settings.DETECTOR_LOGGER,
             choices=["console", "db", "file"],
         )
@@ -29,15 +31,15 @@ class DetectCommand(BaseCommand):
 
     def handle(self, *args, **options):
 
-        logger = self.get_instance("logger", options)
+        loggers = [self.get_instance("logger", {**options, "logger": logger}) for logger in options["logger"]]
 
         print("Starting detector service.")
-        print(f"Using logger: {logger}")
+        print(f"Using loggers: {', '.join(map(str, loggers))}")
         verbose = options.get("verbose", settings.DETECTOR_VERBOSE)
         detector_file = options.get("detector_file", settings.DETECTOR_FILE)
 
         detect_process = DetectProcess(
-            logger,
+            loggers,
             verbose=verbose,
             detector_file=detector_file,
         )

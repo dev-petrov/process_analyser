@@ -55,7 +55,7 @@ class AnomalyDetector:
         if not hasattr(self, "_groups") or not hasattr(self, "_splits"):
             raise ValueError('You should call "fit" or "load_model" first.')
         data = data.copy()
-        data["label"] = data.apply(lambda x: self._groups[self._encode(x)], axis=1)
+        data["label"] = data.apply(lambda x: self._groups.get(self._encode(x), "anomaly"), axis=1)
 
         return data
 
