@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+import pytest
 
 from detector.algorythm import AnomalyDetector, AnomalyException
 from detector.algorythm.splits import SplitsCollection
@@ -11,14 +12,14 @@ def test_algorythm():
 
     detector = AnomalyDetector()
 
-    detail = None
+    pytest.raises(ValueError, detector.detect, df).match('You should call "fit" or "load_model" first.')
+    pytest.raises(ValueError, detector.classify, df).match('You should call "fit" or "load_model" first.')
 
-    try:
-        detector.detect(df)
-    except ValueError as e:
-        detail = str(e)
+    detector.fit(df, clear_anomalies=False)
 
-    assert detail == 'You should call "fit" or "load_model" first.'
+    classified = detector.classify(df)
+
+    assert "label" in classified.columns
 
     detector.fit(df)
 
@@ -38,23 +39,8 @@ def test_algorythm():
     anomalies = detector.detect(df.iloc[19:20, :].reset_index(), raise_exception=False)
     assert len(anomalies) == 0
 
-    exception_raised = False
-
-    try:
-        detector.detect(df.iloc[20:21, :].reset_index())
-    except AnomalyException:
-        exception_raised = True
-
-    assert exception_raised
-
-    exception_raised = False
-
-    try:
-        detector.detect(pd.DataFrame(columns=["x1", "x2"], data=[(-100, 1000)]))
-    except AnomalyException:
-        exception_raised = True
-
-    assert exception_raised
+    pytest.raises(AnomalyException, detector.detect, df.iloc[20:21, :].reset_index())
+    pytest.raises(AnomalyException, detector.detect, pd.DataFrame(columns=["x1", "x2"], data=[(-100, 1000)]))
 
     detector.save_model("./detector/tests/algorythm/__test_save.json")
 

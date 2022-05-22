@@ -12,7 +12,8 @@ from .utils import json_default
 
 class AnomalyDetector:
     _splits: SplitsCollection
-    _normal_states: set[int]
+    _normal_states: set[tuple[int]]
+    _groups: dict[tuple[int], int]
     _qualitatives: list[str]
 
     def __init__(self, qualitatives: list[str] = None) -> None:
@@ -20,7 +21,7 @@ class AnomalyDetector:
             qualitatives = AGGREGATION_SETTINGS.qualitatives
         self._qualitatives = qualitatives
 
-    def fit(self, data: pd.DataFrame) -> None:
+    def fit(self, data: pd.DataFrame, clear_anomalies=True) -> None:
         df = self._clean_df(data)
         self._splits = SplitsCollection.build(df, qualitatives=self._qualitatives)
         normal_states = pd.DataFrame(
@@ -44,12 +45,20 @@ class AnomalyDetector:
         for _, row in normal_states_groupped.iterrows():
             total_percent += row.density
             groups.append(row.group)
-            if total_percent > 0.89:
+            if total_percent > 0.89 and clear_anomalies:
                 break
 
         self._normal_states = set(map(tuple, normal_states[normal_states.group.isin(groups)][cols].values))
+        self._groups = {state: i + 1 for i, state in enumerate(self._normal_states)}
 
-    @classmethod
+    def classify(self, data: pd.DataFrame) -> pd.DataFrame:
+        if not hasattr(self, "_groups") or not hasattr(self, "_splits"):
+            raise ValueError('You should call "fit" or "load_model" first.')
+        data = data.copy()
+        data["label"] = data.apply(lambda x: self._groups[self._encode(x)], axis=1)
+
+        return data
+
     def _clean_df(cls, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         cols_to_float = map(lambda x: (x[0], np.float64), filter(lambda x: x[1] == "object", df.dtypes.iteritems()))
