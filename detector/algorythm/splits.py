@@ -18,6 +18,11 @@ class BaseSplit(abc.ABC):
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:  # pragma: no cover
         pass
 
+    def get_value_from_vector(self, vector: str) -> int:
+        for i, value in enumerate(map(int, vector)):
+            if value:
+                return self.splits[i]
+
 
 class QuantitativeSplit(BaseSplit):
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:
@@ -146,3 +151,22 @@ class SplitsCollection:
 
     def __len__(self) -> int:
         return len(self._splits)
+
+    def __getitem__(self, index: int) -> BaseSplit:
+        if not isinstance(index, int):
+            raise ValueError("index should be int not {}".format(type(index)))
+
+        return self._splits[index]
+
+    def split_vector(self, vector: str) -> list[str]:
+        if len(vector) != len(self.as_columns):
+            raise ValueError("vector has invalid len")
+
+        splited_vector = []
+
+        i = 0
+        for split in self:
+            splited_vector.append(vector[i : i + len(split.splits)])  # noqa: E203
+            i += len(split.splits)
+
+        return splited_vector

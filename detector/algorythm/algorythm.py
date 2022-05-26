@@ -1,4 +1,5 @@
 import json
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -7,12 +8,13 @@ from detector.aggregator.aggregation_settings import AGGREGATION_SETTINGS
 
 from .exceptions import AnomalyException
 from .splits import SplitsCollection
+from .states import State, StatesCollection
 from .utils import json_default
 
 
 class AnomalyDetector:
     _splits: SplitsCollection
-    _normal_states: set[tuple[int]]
+    _normal_states: StatesCollection
     _groups: dict[tuple[int], int]
     _qualitatives: list[str]
 
@@ -48,7 +50,9 @@ class AnomalyDetector:
             if total_percent > 0.89 and clear_anomalies:
                 break
 
-        self._normal_states = set(map(tuple, normal_states[normal_states.group.isin(groups)][cols].values))
+        self._normal_states = StatesCollection(
+            set(map(tuple, normal_states[normal_states.group.isin(groups)][cols].values)), splits=self._splits
+        )
         self._groups = {state: i + 1 for i, state in enumerate(self._normal_states)}
 
     def classify(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -76,7 +80,7 @@ class AnomalyDetector:
         with open(path) as file:
             data = json.loads(file.read())
         self._splits = SplitsCollection.load_from_dict(data["splits"])
-        self._normal_states = set(map(tuple, data["normal_states"]))
+        self._normal_states = StatesCollection(set(map(tuple, data["normal_states"])), splits=self._splits)
 
     def detect(self, data: pd.DataFrame, raise_exception=True) -> list[pd.Series]:
         if not hasattr(self, "_normal_states") or not hasattr(self, "_splits"):
@@ -108,6 +112,9 @@ class AnomalyDetector:
                 raise AnomalyException([row])
             new_row[curr_index_start + value_index] = 1
         return tuple(new_row)
+
+    def get_closest_states(self, state: Union[tuple[int], State], max_distance=3) -> list[State]:
+        return self._normal_states.closest_states(state, max_distance=max_distance)
 
     def __str__(self) -> str:
         return "DefaultAnomalyDetector"

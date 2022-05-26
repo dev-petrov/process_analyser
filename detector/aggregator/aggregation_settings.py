@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from sqlalchemy import Time, and_, case, cast, func
+from sqlalchemy import and_, case, func
+
+from detector.db import extract_time
 
 
 @dataclass
@@ -71,9 +73,18 @@ AGGREGATION_SETTINGS = AggregationSetting(
             "time_of_day",
             lambda x: case(
                 [
-                    (and_(cast(func.max(x.dttm), Time) >= "00:00:00", cast(func.max(x.dttm), Time) < "06:00:00"), 0),
-                    (and_(cast(func.max(x.dttm), Time) >= "06:00:00", cast(func.max(x.dttm), Time) < "12:00:00"), 1),
-                    (and_(cast(func.max(x.dttm), Time) >= "12:00:00", cast(func.max(x.dttm), Time) < "18:00:00"), 2),
+                    (
+                        and_(extract_time(func.max(x.dttm)) >= "00:00:00", extract_time(func.max(x.dttm)) < "06:00:00"),
+                        0,
+                    ),
+                    (
+                        and_(extract_time(func.max(x.dttm)) >= "06:00:00", extract_time(func.max(x.dttm)) < "12:00:00"),
+                        1,
+                    ),
+                    (
+                        and_(extract_time(func.max(x.dttm)) >= "12:00:00", extract_time(func.max(x.dttm)) < "18:00:00"),
+                        2,
+                    ),
                 ],
                 else_=3,
             ),
