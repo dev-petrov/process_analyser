@@ -5,6 +5,7 @@ import pytest
 
 from detector.algorythm import AnomalyDetector, AnomalyException
 from detector.algorythm.splits import SplitsCollection
+from detector.algorythm.states import State, StatesCollection
 
 
 def test_algorythm():
@@ -72,6 +73,9 @@ def test_splits_collection():
 
     splits = SplitsCollection.build(data, qualitatives=["character"])
 
+    pytest.raises(ValueError, splits.__getitem__, "str_index").match("index should be int not str")
+    pytest.raises(ValueError, splits.split_vector, "00").match("vector has invalid len")
+
     assert splits._splits[-1].get_value_position(1) == 0
 
     assert str(splits) == (
@@ -82,3 +86,57 @@ def test_splits_collection():
 
     assert repr(splits) == str(splits)
     assert len(splits) == 3
+
+
+def test_states_collection():
+    df = pd.read_csv("./detector/tests/algorythm/test_data.csv")
+    detector = AnomalyDetector()
+    detector.fit(df)
+
+    anomaly_vector = (1.0, 0.0, 1.0, 0.0, 0.0)
+
+    closest_states = detector.get_closest_states(anomaly_vector, max_distance=1)
+
+    assert closest_states == {
+        (0.0, 1.0, 1.0, 0.0, 0.0),
+        (1.0, 0.0, 0.0, 1.0, 0.0),
+    }
+
+    assert closest_states.fields_differ(anomaly_vector) == {
+        State((1.0, 0.0, 0.0, 1.0, 0.0)): [
+            {
+                "field": "x2",
+                "self_interval": (10.979859296482413, 13.160798994974874),
+                "state_interval": (9.244755936632929, 10.979859296482413),
+            }
+        ],
+        State((0.0, 1.0, 1.0, 0.0, 0.0)): [
+            {
+                "field": "x1",
+                "self_interval": (8.75056783919598, 11.430956359906506),
+                "state_interval": (6.6656643101493795, 8.75056783919598),
+            }
+        ],
+    }
+
+    assert State((0.0, 1.0, 0.0, 0.0, 1.0)) ^ anomaly_vector == 2
+
+    assert len(detector._normal_states) == 3
+    assert detector._normal_states[0] == State((0.0, 1.0, 0.0, 0.0, 1.0))
+
+    pytest.raises(ValueError, detector._normal_states.__getitem__, "str_index").match("index should be int not str")
+
+    collection = StatesCollection(
+        {
+            (0.0, 1.0, 0.0, 0.0, 1.0),
+            (0.0, 1.0, 1.0, 0.0, 0.0),
+            (1.0, 0.0, 0.0, 1.0, 0.0),
+        }
+    )
+
+    pytest.raises(ValueError, collection.fields_differ, anomaly_vector).match(
+        "You should create StatesCollection with SplitsCollection."
+    )
+
+    assert str(detector._normal_states[0]) == "01001"
+    assert str(detector._normal_states) == "{01001, 01100, 10010}"

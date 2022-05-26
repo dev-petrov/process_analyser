@@ -154,7 +154,7 @@ class SplitsCollection:
 
     def __getitem__(self, index: int) -> BaseSplit:
         if not isinstance(index, int):
-            raise ValueError("index should be int not {}".format(type(index)))
+            raise ValueError("index should be int not {}".format(type(index).__name__))
 
         return self._splits[index]
 

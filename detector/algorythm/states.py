@@ -17,13 +17,13 @@ class State:
     def __repr__(self) -> str:
         return self.binary_vector
 
-    def __str__(self) -> str:
-        return self.__repr__()
-
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, State):
             return self.state == __o.state
         return self.state == __o
+
+    def __xor__(self, __o: object) -> int:
+        return self.distance(__o)
 
     @property
     def binary_vector(self) -> str:
@@ -77,6 +77,9 @@ class StatesCollection:
         self._states = set(State(state) if not isinstance(state, State) else state for state in states)
         self._splits = splits
 
+    def __repr__(self) -> str:
+        return str(self._states)
+
     def __contains__(self, obj: Any) -> bool:
         return obj in self._states
 
@@ -89,7 +92,7 @@ class StatesCollection:
 
     def __getitem__(self, index: int) -> State:
         if not isinstance(index, int):
-            raise ValueError("index should be int not {}".format(type(index)))
+            raise ValueError("index should be int not {}".format(type(index).__name__))
 
         return list(self._states)[index]
 
@@ -99,12 +102,12 @@ class StatesCollection:
 
         return self._states == __o
 
-    def closest_states(self, state: Union["State", tuple[int]], max_distance: int = 3) -> "StatesCollection[State]":
+    def closest_states(self, state: Union["State", tuple[int]], max_distance: int = 3) -> "StatesCollection":
         if isinstance(state, tuple):
             state = State(state)
 
         return StatesCollection(
-            sorted(filter(lambda s: s.distance(state) <= max_distance, self._states), key=lambda s: s.distance(state)),
+            sorted(filter(lambda s: s ^ state <= max_distance, self._states), key=lambda s: s ^ state),
             splits=self._splits,
         )
 

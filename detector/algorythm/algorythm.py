@@ -113,7 +113,7 @@ class AnomalyDetector:
             new_row[curr_index_start + value_index] = 1
         return tuple(new_row)
 
-    def get_closest_states(self, state: Union[tuple[int], State], max_distance=3) -> list[State]:
+    def get_closest_states(self, state: Union[tuple[int], State], max_distance=3) -> StatesCollection:
         return self._normal_states.closest_states(state, max_distance=max_distance)
 
     def __str__(self) -> str:
