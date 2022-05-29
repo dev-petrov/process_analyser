@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 from io import BytesIO
 
@@ -23,6 +24,8 @@ Session.configure(bind=get_engine())
 def row_as_dict(row):
     d = row.__dict__
     d.pop("_sa_instance_state")
+    if "reason" in d:
+        d["reason"] = json.loads(d["reason"])
     return d
 
 

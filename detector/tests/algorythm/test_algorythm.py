@@ -35,13 +35,52 @@ def test_algorythm():
 
     anomalies = detector.detect(df.iloc[20:21, :].reset_index(), raise_exception=False)
     assert len(anomalies) == 1
-    assert [anomalies[0].x1, anomalies[0].x2] == [7.4, 9.744]
+    assert [anomalies[0]["aggregated"]["x1"], anomalies[0]["aggregated"]["x2"]] == [7.4, 9.744]
+    assert anomalies[0]["closest_states"] == [
+        [
+            {
+                "field": "x1",
+                "self_interval": (8.75056783919598, 11.430956359906506),
+                "state_interval": (6.6656643101493795, 8.75056783919598),
+            },
+            {
+                "field": "x2",
+                "self_interval": (13.160798994974874, 14.907887949511057),
+                "state_interval": (9.244755936632929, 10.979859296482413),
+            },
+        ],
+        [
+            {
+                "field": "x1",
+                "self_interval": (8.75056783919598, 11.430956359906506),
+                "state_interval": (6.6656643101493795, 8.75056783919598),
+            }
+        ],
+        [
+            {
+                "field": "x2",
+                "self_interval": (10.979859296482413, 13.160798994974874),
+                "state_interval": (9.244755936632929, 10.979859296482413),
+            }
+        ],
+    ]
 
     anomalies = detector.detect(df.iloc[19:20, :].reset_index(), raise_exception=False)
     assert len(anomalies) == 0
 
     pytest.raises(AnomalyException, detector.detect, df.iloc[20:21, :].reset_index())
     pytest.raises(AnomalyException, detector.detect, pd.DataFrame(columns=["x1", "x2"], data=[(-100, 1000)]))
+
+    df["qualitative"] = 1
+
+    detector = AnomalyDetector(qualitatives=["qualitative"])
+    detector.fit(df)
+
+    anomalies = detector.detect(df.iloc[20:21, :].reset_index(), raise_exception=False)
+    assert len(anomalies) == 1
+
+    anomalies = detector.detect(df.iloc[19:20, :].reset_index(), raise_exception=False)
+    assert len(anomalies) == 0
 
     detector.save_model("./detector/tests/algorythm/__test_save.json")
 

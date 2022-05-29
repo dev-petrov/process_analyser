@@ -42,7 +42,6 @@ export default {
       this.modalContent = params.data;
       this.showErrorModal = true;
     });
-    await this.$store.dispatch('setNetworks');
   },
 };
 </script>

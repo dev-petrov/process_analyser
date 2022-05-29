@@ -1,10 +1,11 @@
 import json
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
 
 from detector.aggregator.aggregation_settings import AGGREGATION_SETTINGS
+from detector.settings import MAX_DISTANCE
 
 from .exceptions import AnomalyException
 from .splits import SplitsCollection
@@ -50,8 +51,8 @@ class AnomalyDetector:
             if total_percent > 0.89 and clear_anomalies:
                 break
 
-        self._normal_states = StatesCollection(
-            set(map(tuple, normal_states[normal_states.group.isin(groups)][cols].values)), splits=self._splits
+        self._normal_states = StatesCollection.build(
+            set(map(tuple, normal_states[normal_states.group.isin(groups)][cols].values)), df, self._splits
         )
         self._groups = {state: i + 1 for i, state in enumerate(self._normal_states)}
 
@@ -80,16 +81,28 @@ class AnomalyDetector:
         with open(path) as file:
             data = json.loads(file.read())
         self._splits = SplitsCollection.load_from_dict(data["splits"])
-        self._normal_states = StatesCollection(set(map(tuple, data["normal_states"])), splits=self._splits)
+        self._normal_states = StatesCollection.from_dict(data["normal_states"], splits=self._splits)
 
-    def detect(self, data: pd.DataFrame, raise_exception=True) -> list[pd.Series]:
+    def detect(self, data: pd.DataFrame, raise_exception=True) -> list[dict[str, Any]]:
         if not hasattr(self, "_normal_states") or not hasattr(self, "_splits"):
             raise ValueError('You should call "fit" or "load_model" first.')
         anomalies = []
 
-        for i, state in enumerate(list(data.apply(self._encode, axis=1))):
+        dict_data = data.to_dict("index")
+
+        for i, state in data.iterrows():
             if state not in self._normal_states:
-                anomalies.append(data.loc[i])
+                anomalies.append(
+                    {
+                        "index": i,
+                        "aggregated": dict_data[i],
+                        "closest_states": list(
+                            self._normal_states.closest_states_with_fields_differ(
+                                self._encode(data.loc[i]), max_distance=MAX_DISTANCE
+                            ).values()
+                        ),
+                    }
+                )
 
         if anomalies and raise_exception:
             raise AnomalyException(anomalies)
@@ -108,8 +121,6 @@ class AnomalyDetector:
             next_index += len(split.splits)
             value = row[split.field]
             value_index = split.get_value_position(value)
-            if value_index is None:
-                raise AnomalyException([row])
             new_row[curr_index_start + value_index] = 1
         return tuple(new_row)
 

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from detector.db import AnomalyLog
@@ -13,6 +14,6 @@ def test_database_logger(db_session, log_data):
 
     assert db_session.query(AnomalyLog).count() == 1
     log = db_session.query(AnomalyLog).one()
-    assert log.reason == str(log_data)
+    assert json.loads(log.reason) == log_data
     assert log.dttm == dttm
     assert str(logger) == "DataBaseAnomalyLogger"

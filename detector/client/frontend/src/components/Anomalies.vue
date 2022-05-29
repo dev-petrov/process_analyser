@@ -29,7 +29,7 @@
         <span>{{ new Date(Date.parse(item.dttm) + tzOffset).toLocaleString() }}</span>
       </template>
       <template v-slot:item.reason="{ item }">
-        <span>{{ item.reason.slice(0, 100) }}...</span>
+        <span>{{ item.reason.closest_states.length }}</span>
       </template>
     </v-data-table>
   </div>
@@ -45,7 +45,7 @@ export default {
           value: "dttm",
         },
         {
-          text: "Причина",
+          text: "Количество ближайших состояний",
           value: "reason",
         },
       ],

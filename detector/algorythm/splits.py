@@ -31,7 +31,9 @@ class QuantitativeSplit(BaseSplit):
             if value >= min and value < max:
                 index = i
                 break
-        return i if index is None and value == self.splits[i][1] else index
+        if index is None:
+            index = 0 if value < self.splits[0][0] else i
+        return index
 
 
 class QualitativeSplit(BaseSplit):
@@ -109,7 +111,15 @@ class SplitsCollection:
 
     @property
     def as_columns(self) -> list[str]:
-        return [f"{split.field}_{i+1}" for split in self._splits for i in range(len(split.splits))]
+        return [f"{split.field}_{i+1}" for split in self for i in range(len(split.splits))]
+
+    @property
+    def splits_columns(self) -> list[str]:
+        return [split.field for split in self]
+
+    @property
+    def qualitative_fields(self) -> list[str]:
+        return [split.field for split in self if isinstance(split, QualitativeSplit)]
 
     def __iter__(self) -> Generator[BaseSplit, None, None]:
         for split in self._splits:
@@ -170,3 +180,8 @@ class SplitsCollection:
             i += len(split.splits)
 
         return splited_vector
+
+    def splits_from_state(self, state: tuple[int]) -> dict[str, tuple[float, float]]:
+        splited_vector = self.split_vector("".join(map(str, map(int, state))))
+
+        return {split.field: split.get_value_from_vector(splited_vector[i]) for i, split in enumerate(self)}
