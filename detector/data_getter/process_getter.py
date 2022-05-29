@@ -40,6 +40,7 @@ class ProcessGetter:
                     and process["cmdline"]
                     and re.match(settings.EXCLUDE_COMMAND, " ".join(process["cmdline"]))
                 )
+                or (settings.EXCLUDE_NAME and process["cmdline"] and re.match(settings.EXCLUDE_NAME, process["name"]))
             )
 
         processes = list(
