@@ -8,3 +8,4 @@ anomaly.db
 .pytest_cache
 cov.xml
 node_modules
+.vscode

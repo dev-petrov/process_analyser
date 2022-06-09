@@ -74,15 +74,24 @@ AGGREGATION_SETTINGS = AggregationSetting(
             lambda x: case(
                 [
                     (
-                        and_(extract_time(func.max(x.dttm)) >= "00:00:00", extract_time(func.max(x.dttm)) < "06:00:00"),
+                        and_(
+                            extract_time(func.max(x.max_dttm)) >= "00:00:00",
+                            extract_time(func.max(x.max_dttm)) < "06:00:00",
+                        ),
                         0,
                     ),
                     (
-                        and_(extract_time(func.max(x.dttm)) >= "06:00:00", extract_time(func.max(x.dttm)) < "12:00:00"),
+                        and_(
+                            extract_time(func.max(x.max_dttm)) >= "06:00:00",
+                            extract_time(func.max(x.max_dttm)) < "12:00:00",
+                        ),
                         1,
                     ),
                     (
-                        and_(extract_time(func.max(x.dttm)) >= "12:00:00", extract_time(func.max(x.dttm)) < "18:00:00"),
+                        and_(
+                            extract_time(func.max(x.max_dttm)) >= "12:00:00",
+                            extract_time(func.max(x.max_dttm)) < "18:00:00",
+                        ),
                         2,
                     ),
                 ],
