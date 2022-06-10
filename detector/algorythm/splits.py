@@ -86,11 +86,15 @@ class SplitsCollection:
         local_minimums.append(cls._get_interval(serie[serie >= local_minimums[-1]])[1])
 
         _splits = [(_round(local_minimums[i]), _round(local_minimums[i + 1])) for i in range(len(local_minimums) - 1)]
+        _splits = [(Decimal(mi), Decimal(ma)) for mi, ma in _splits if mi != ma]
+
+        if len(_splits) < 2:  # pragma no cover
+            return
 
         splits.append(
             QuantitativeSplit(
                 field=field,
-                splits=[(Decimal(mi), Decimal(ma)) for mi, ma in _splits if mi != ma],
+                splits=_splits,
             )
         )
         return splits
