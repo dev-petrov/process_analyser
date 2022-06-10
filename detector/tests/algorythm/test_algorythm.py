@@ -32,7 +32,7 @@ def test_algorythm():
     }
     assert detector._columns == ["x1_1", "x1_2", "x2_1", "x2_2", "x2_3"]
 
-    assert str(detector) == "DefaultAnomalyDetector"
+    assert str(detector) == "AnomalyDetector"
 
     anomalies = detector.detect(df.iloc[20:21, :].reset_index(), raise_exception=False)
     assert len(anomalies) == 1

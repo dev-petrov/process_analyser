@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
 import pandas as pd
-from sqlalchemy import distinct, func, literal_column
+from sqlalchemy import distinct, func
 from sqlalchemy.orm import Query, Session
 
-from detector.db import BaseRawValue, RawCleanedValue, RawValue, session_scope
+from detector.db import BaseRawValue, RawCleanedValue, RawValue, session_scope, string_agg
 
 from .aggregation_settings import AGGREGATION_SETTINGS, AggregationSetting
 
@@ -37,7 +37,7 @@ class Aggregator:
                 raw_value_cls.username,
                 *[func.avg(getattr(raw_value_cls, field)).label(field) for field in average_fields],
                 func.max(raw_value_cls.dttm).label("max_dttm"),
-                func.string_agg(raw_value_cls.status, literal_column("','")).label("status"),
+                string_agg(raw_value_cls.status).label("status"),
             )
             .filter(
                 raw_value_cls.dttm > dttm_from,

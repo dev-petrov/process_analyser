@@ -70,7 +70,7 @@ class AnomalyDetector:
         float_columns = list(
             map(lambda x: x[0], filter(lambda x: x[1] in ["object", "float64"], df.dtypes.iteritems()))
         )
-        df = df.astype(dict([(field, float) for field in float_columns])).round(5)
+        df = df.astype(dict([(field, float) for field in float_columns])).round(6)
         cols_to_decimal = dict([(field, np.dtype(Decimal)) for field in float_columns])
         return df.astype(cols_to_decimal)
 
@@ -134,4 +134,4 @@ class AnomalyDetector:
         return self._normal_states.closest_states(state, max_distance=max_distance)
 
     def __str__(self) -> str:
-        return "DefaultAnomalyDetector"
+        return "AnomalyDetector"
