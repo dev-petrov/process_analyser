@@ -43,23 +43,23 @@ AGGREGATION_SETTINGS = AggregationSetting(
     custom_agg=[
         CustomAggregation(
             "idle_status_count",
-            lambda x: func.count(x.status).filter(x.status == "idle"),
+            lambda x: func.count(x.status).filter(x.status.contains("idle")),
         ),
         CustomAggregation(
             "sleeping_status_count",
-            lambda x: func.count(x.status).filter(x.status == "sleeping"),
+            lambda x: func.count(x.status).filter(x.status.contains("sleeping")),
         ),
         CustomAggregation(
             "running_status_count",
-            lambda x: func.count(x.status).filter(x.status == "running"),
+            lambda x: func.count(x.status).filter(x.status.contains("running")),
         ),
         CustomAggregation(
             "zombie_status_count",
-            lambda x: func.count(x.status).filter(x.status == "zombie"),
+            lambda x: func.count(x.status).filter(x.status.contains("zombie")),
         ),
         CustomAggregation(
             "disk_sleep_status_count",
-            lambda x: func.count(x.status).filter(x.status == "disk_sleep"),
+            lambda x: func.count(x.status).filter(x.status.contains("disk_sleep")),
         ),
         CustomAggregation(
             "root_processes_count",

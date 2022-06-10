@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 import pandas as pd
-from sqlalchemy import distinct, func
+from sqlalchemy import distinct, func, literal_column
 from sqlalchemy.orm import Query, Session
 
 from detector.db import BaseRawValue, RawCleanedValue, RawValue, session_scope
@@ -34,16 +34,16 @@ class Aggregator:
         average_fields = ["cpu_percent", "memory_percent", "num_threads", "connections", "open_files"]
         groupped_processes_qs = (
             session.query(
-                raw_value_cls.status,
                 raw_value_cls.username,
                 *[func.avg(getattr(raw_value_cls, field)).label(field) for field in average_fields],
                 func.max(raw_value_cls.dttm).label("max_dttm"),
+                func.string_agg(raw_value_cls.status, literal_column("','")).label("status"),
             )
             .filter(
                 raw_value_cls.dttm > dttm_from,
                 raw_value_cls.dttm <= dttm_to,
             )
-            .group_by("pid", "username", "status")
+            .group_by("pid", "username")
             .subquery()
         )
         aggregation_settings = [
