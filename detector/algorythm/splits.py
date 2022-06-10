@@ -1,5 +1,7 @@
 import abc
 from dataclasses import dataclass
+from decimal import Decimal
+from statistics import mean, stdev
 from typing import Generator, Optional, Union
 
 import numpy as np
@@ -12,7 +14,7 @@ from scipy.signal import argrelextrema
 @dataclass
 class BaseSplit(abc.ABC):
     field: str
-    splits: list[Union[tuple[float, float], tuple[int, int], float, int]]
+    splits: list[Union[tuple[Decimal, Decimal], float, int]]
 
     @abc.abstractmethod
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:  # pragma: no cover
@@ -24,7 +26,11 @@ class BaseSplit(abc.ABC):
                 return self.splits[i]
 
 
+@dataclass
 class QuantitativeSplit(BaseSplit):
+    def __post_init__(self):
+        self.splits = [(Decimal(mi), Decimal(ma)) for mi, ma in self.splits]
+
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:
         index = None
         for i, (min, max) in enumerate(self.splits):
@@ -83,7 +89,7 @@ class SplitsCollection:
         splits.append(
             QuantitativeSplit(
                 field=field,
-                splits=[(mi, ma) for mi, ma in _splits if mi != ma],
+                splits=[(Decimal(mi), Decimal(ma)) for mi, ma in _splits if mi != ma],
             )
         )
         return splits
@@ -92,7 +98,7 @@ class SplitsCollection:
     def _get_interval(data: pd.Series) -> tuple[float, float]:
         if len(data) < 2:
             return data.min(), data.max()
-        return (min(data.mean() - 3 * data.std(), data.min()), max(data.mean() + 3 * data.std(), data.max()))
+        return (min(mean(data) - 3 * stdev(data), data.min()), max(mean(data) + 3 * stdev(data), data.max()))
 
     @staticmethod
     def _find_mininmums(data: pd.Series) -> np.ndarray:

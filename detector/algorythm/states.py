@@ -1,6 +1,10 @@
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal
+from math import pow
+from statistics import mean, stdev
 from typing import Any, Generator, Optional, Union
 
+import numpy as np
 import pandas as pd
 
 from .splits import SplitsCollection
@@ -9,8 +13,12 @@ from .splits import SplitsCollection
 @dataclass
 class EllipsoidParam:
     field: str
-    mean: float
-    std: float
+    mean: Decimal
+    std: Decimal
+
+    def __post_init__(self):
+        self.mean = Decimal(self.mean)
+        self.std = Decimal(self.std)
 
     @property
     def as_dict(self) -> dict[str, Any]:
@@ -64,7 +72,11 @@ class State:
 
     @property
     def ellipsoid_params_as_qualitatives(self) -> list[QualitativeValue]:
-        return [QualitativeValue(param.field, param.mean) for param in self.ellipsoid_params if param.std == 0]
+        return [
+            QualitativeValue(param.field, param.mean)
+            for param in self.ellipsoid_params
+            if param.std == 0 and int(param.mean) == param.mean
+        ]
 
     def _difference_vector(self, state: "State") -> str:
         return "{0:b}".format(state.as_int ^ self.as_int)
@@ -106,7 +118,7 @@ class State:
 
         for ellipsoid in self.normal_ellipsoid_params:
             value = obj[ellipsoid.field]
-            ellipsoid_value += (float(value) - ellipsoid.mean) ** 2 / (ellipsoid.std) ** 2
+            ellipsoid_value += pow(Decimal(float(value)) - ellipsoid.mean, 2) / pow(ellipsoid.std, 2)
 
         return ellipsoid_value <= 1 and all(
             [
@@ -213,17 +225,17 @@ class StatesCollection:
                         )
                     )
                     continue
-                column_values = values[column]
+                column_values = values[column].astype(np.dtype(Decimal))
                 if len(column_values) <= 2:
                     mi, ma = state_splits[column]
-                    mean, std = (ma + mi) / 2, (ma - mi)
+                    mn, std = (ma + mi) / 2, (ma - mi) / 2
                 else:
-                    mean, std = column_values.mean(), 3 * column_values.std()
+                    mn, std = mean(column_values), 3 * stdev(column_values)
                 ellipsoids.append(
                     EllipsoidParam(
                         column,
-                        mean,
-                        std,
+                        Decimal(mn),
+                        Decimal(std),
                     )
                 )
             states_objs.add(State(state, ellipsoids, qualitative_values))

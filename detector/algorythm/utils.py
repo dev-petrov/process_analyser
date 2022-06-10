@@ -8,7 +8,7 @@ from .states import StatesCollection
 
 def json_default(obj):  # pragma: no cover
     if isinstance(obj, Decimal):
-        return float(obj)
+        return str(obj)
     elif isinstance(obj, set):
         return list(obj)
     elif isinstance(obj, tuple):

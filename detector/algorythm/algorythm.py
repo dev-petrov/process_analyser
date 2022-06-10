@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from typing import Any, Union
 
 import numpy as np
@@ -66,8 +67,12 @@ class AnomalyDetector:
 
     def _clean_df(cls, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
-        cols_to_float = map(lambda x: (x[0], np.float64), filter(lambda x: x[1] == "object", df.dtypes.iteritems()))
-        return df.astype(dict(cols_to_float))
+        float_columns = list(
+            map(lambda x: x[0], filter(lambda x: x[1] in ["object", "float64"], df.dtypes.iteritems()))
+        )
+        df = df.astype(dict([(field, np.longdouble) for field in float_columns])).round(5)
+        cols_to_decimal = dict([(field, np.dtype(Decimal)) for field in float_columns])
+        return df.astype(cols_to_decimal)
 
     def save_model(self, path: str) -> None:
         data = {
@@ -86,6 +91,7 @@ class AnomalyDetector:
     def detect(self, data: pd.DataFrame, raise_exception=True) -> list[dict[str, Any]]:
         if not hasattr(self, "_normal_states") or not hasattr(self, "_splits"):
             raise ValueError('You should call "fit" or "load_model" first.')
+        data = self._clean_df(data)
         anomalies = []
 
         dict_data = data.to_dict("index")
