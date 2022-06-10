@@ -33,6 +33,7 @@ class QuantitativeSplit(BaseSplit):
 
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:
         index = None
+        value = Decimal(float(value))
         for i, (min, max) in enumerate(self.splits):
             if value >= min and value < max:
                 index = i
@@ -74,7 +75,7 @@ class SplitsCollection:
         def _round(x):
             if need_round:
                 x = round(x)
-            return x
+            return float(x)
 
         local_minimums = list(cls._find_mininmums(serie))
 
