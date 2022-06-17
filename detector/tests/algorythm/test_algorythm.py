@@ -96,6 +96,8 @@ def test_algorythm():
     pytest.raises(AnomalyException, detector.detect, df.iloc[20:21, :].reset_index())
     pytest.raises(AnomalyException, detector.detect, pd.DataFrame(columns=["x1", "x2"], data=[(-100, 1000)]))
 
+    assert detector.detect(df.iloc[20:21, :].reset_index(), raise_exception=False, max_difference_to_skip=1) == []
+
     df["qualitative"] = 1
 
     detector = AnomalyDetector(qualitatives=["qualitative"])
@@ -124,14 +126,14 @@ def test_splits_collection():
             (1.1, 1, 3, 1),
             (2.34, 2, 3, 1),
             (1.1, 2, 3, 2),
-            (1.1, 2, 3, 2),
-            (1.1, 2, 3, 2),
-            (1.1, 8, 3, 2),
+            (8.1, 2, 3, 2),
+            (8.25, 2, 3, 2),
+            (2.412, 8, 3, 2),
             (1.1, 8, 3, 1),
-            (1.1, 8, 3, 2),
+            (9.89, 8, 3, 2),
             (1.1, 8, 3, 1),
-            (1.1, 8, 3, 2),
-            (1.1, 10, 3, 1),
+            (2.67, 8, 3, 2),
+            (1.156, 10, 3, 1),
         ],
     )
 
@@ -143,17 +145,44 @@ def test_splits_collection():
     assert splits._splits[-1].get_value_position(1) == 0
 
     assert str(splits) == (
-        "[QuantitativeSplit(field='float', splits="
-        "[(Decimal('1.100000000000000088817841970012523233890533447265625'), "
-        "Decimal('1.8352763819095476716114490045583806931972503662109375')), "
-        "(Decimal('1.8352763819095476716114490045583806931972503662109375'), "
-        "Decimal('2.339999999999999857891452847979962825775146484375'))]), "
-        "QuantitativeSplit(field='int', splits=[(Decimal('0'), Decimal('5')), "
-        "(Decimal('5'), Decimal('11'))]), QualitativeSplit(field='character', splits=[1, 2])]"
+        "[QuantitativeSplit(field='float', splits=[(-0.5126697208058462, 6.356331658291458),"
+        " (6.356331658291458, 11.725643000913047)]), QuantitativeSplit(field='int', splits="
+        "[(0.0, 5.0), (5.0, 11.0)]), QualitativeSplit(field='character', splits=[1, 2])]"
     )
 
     assert repr(splits) == str(splits)
     assert len(splits) == 3
+
+    data = pd.DataFrame(
+        columns=["float", "int"],
+        data=[
+            (1.1, 1),
+            *[(2.34, 8) for _ in range(30)],
+            (1.1, 1),
+            (1.1, 8),
+            (8.1, 9),
+            *[(8.25, 9) for _ in range(30)],
+            (2.412, 8),
+            (1.1, 8),
+            (9.89, 8),
+            *[(9.89, 8) for _ in range(30)],
+            (1.1, 15),
+            *[(2.67, 16) for _ in range(20)],
+            (1.156, 16),
+            *[(1.156, 17) for _ in range(30)],
+            (1.156, 16),
+            (1.156, 20),
+        ],
+    )
+
+    splits = SplitsCollection.build(data)
+    assert len(splits) == 2
+    assert str(splits) == (
+        "[QuantitativeSplit(field='float', splits=[(-0.10085921505940987,"
+        " 5.561256281407035), (5.561256281407035, 11.55562561428394)]), "
+        "QuantitativeSplit(field='int', splits=[(1.0, 13.0), (13.0, 20.0)])]"
+    )
+    assert SplitsCollection._get_interval(data.loc[:1, "int"]) == (1, 8)
 
 
 def test_states_collection():

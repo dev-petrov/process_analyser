@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -19,12 +19,14 @@ class DetectProcess:  # pragma: no cover
     _detector: AnomalyDetector
     _verbose: bool
     _run_cnt: int = 0
+    min_normal_state_difference: Optional[int] = None
 
     def __init__(
         self,
         loggers_objs: list[BaseAnomalyLogger],
         verbose=False,
         detector_file=None,
+        min_normal_state_difference=None,
     ) -> None:
         self._data_getter = ProcessGetter()
         self._collector = DBCollector(RawValue)
@@ -32,6 +34,8 @@ class DetectProcess:  # pragma: no cover
         self._aggregator = Aggregator()
         self._detector = AnomalyDetector()
         self._verbose = verbose
+        if min_normal_state_difference:
+            self.min_normal_state_difference = int(min_normal_state_difference)
         if not detector_file:
             print("Fit detector")
             self._detector.fit(self._aggregator.get_train_data())
@@ -60,7 +64,7 @@ class DetectProcess:  # pragma: no cover
         return self._aggregator.get_detect_data(dttm)
 
     def _detect(self, detect_data: pd.DataFrame) -> list[pd.Series]:
-        return self._detector.detect(detect_data)
+        return self._detector.detect(detect_data, max_difference_to_skip=self.min_normal_state_difference)
 
     def run(self) -> None:
         self._print_if_verbose("Getting data")

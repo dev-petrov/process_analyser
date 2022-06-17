@@ -1,10 +1,7 @@
 from dataclasses import asdict, dataclass, field
-from decimal import Decimal
 from math import pow
-from statistics import mean, stdev
 from typing import Any, Generator, Optional, Union
 
-import numpy as np
 import pandas as pd
 
 from .splits import SplitsCollection
@@ -13,12 +10,8 @@ from .splits import SplitsCollection
 @dataclass
 class EllipsoidParam:
     field: str
-    mean: Decimal
-    std: Decimal
-
-    def __post_init__(self):
-        self.mean = Decimal(self.mean)
-        self.std = Decimal(self.std)
+    mean: float
+    std: float
 
     @property
     def as_dict(self) -> dict[str, Any]:
@@ -118,7 +111,7 @@ class State:
 
         for ellipsoid in self.normal_ellipsoid_params:
             value = obj[ellipsoid.field]
-            ellipsoid_value += pow(Decimal(float(value)) - ellipsoid.mean, 2) / pow(ellipsoid.std, 2)
+            ellipsoid_value += pow(value - ellipsoid.mean, 2) / pow(ellipsoid.std, 2)
 
         return ellipsoid_value <= 1 and all(
             [
@@ -225,17 +218,17 @@ class StatesCollection:
                         )
                     )
                     continue
-                column_values = values[column].astype(np.dtype(Decimal))
+                column_values = values[column]
                 if len(column_values) <= 2:
                     mi, ma = state_splits[column]
-                    mn, std = (ma + mi) / 2, (ma - mi) / 2
+                    mean, std = (ma + mi) / 2, (ma - mi) / 2
                 else:
-                    mn, std = mean(column_values), 3 * stdev(column_values)
+                    mean, std = column_values.mean(), 3 * column_values.std()
                 ellipsoids.append(
                     EllipsoidParam(
                         column,
-                        Decimal(mn),
-                        Decimal(std),
+                        mean,
+                        std,
                     )
                 )
             states_objs.add(State(state, ellipsoids, qualitative_values))

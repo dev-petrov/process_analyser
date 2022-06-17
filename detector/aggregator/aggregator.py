@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Type
 
 import pandas as pd
 from sqlalchemy import distinct, func
@@ -28,7 +29,7 @@ class Aggregator:
                 ]
             )
 
-    def _get_aggregate_query(self, dttm: datetime, session: Session, raw_value_cls: BaseRawValue) -> Query:
+    def _get_aggregate_query(self, dttm: datetime, session: Session, raw_value_cls: Type[BaseRawValue]) -> Query:
         dttm_from = dttm - timedelta(minutes=self.period_length) + timedelta(seconds=2)
         dttm_to = dttm
         average_fields = ["cpu_percent", "memory_percent", "num_threads", "connections", "open_files"]
@@ -36,14 +37,14 @@ class Aggregator:
             session.query(
                 raw_value_cls.username,
                 *[func.avg(getattr(raw_value_cls, field)).label(field) for field in average_fields],
-                func.max(raw_value_cls.dttm).label("max_dttm"),
+                func.max(raw_value_cls.dttm).label("dttm"),
                 string_agg(raw_value_cls.status).label("status"),
             )
             .filter(
                 raw_value_cls.dttm > dttm_from,
                 raw_value_cls.dttm <= dttm_to,
             )
-            .group_by("pid", "username")
+            .group_by(raw_value_cls.pid, raw_value_cls.username)
             .subquery()
         )
         aggregation_settings = [

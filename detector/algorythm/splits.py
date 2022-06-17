@@ -28,12 +28,8 @@ class BaseSplit(abc.ABC):
 
 @dataclass
 class QuantitativeSplit(BaseSplit):
-    def __post_init__(self):
-        self.splits = [(Decimal(mi), Decimal(ma)) for mi, ma in self.splits]
-
     def get_value_position(self, value: Union[float, int]) -> Optional[int]:
         index = None
-        value = Decimal(float(value))
         for i, (min, max) in enumerate(self.splits):
             if value >= min and value < max:
                 index = i
@@ -86,22 +82,41 @@ class SplitsCollection:
         local_minimums.append(cls._get_interval(serie[serie >= local_minimums[-1]])[1])
 
         _splits = [(_round(local_minimums[i]), _round(local_minimums[i + 1])) for i in range(len(local_minimums) - 1)]
-        _splits = [(Decimal(mi), Decimal(ma)) for mi, ma in _splits if mi != ma]
+        _splits = [(mi, ma) for mi, ma in _splits if mi != ma]
 
         if len(_splits) < 2:  # pragma no cover
+            return
+
+        total = len(serie)
+        final_splits = []
+        previous_need_append = False
+        splits_count = 0
+
+        for mi, ma in _splits:
+            percentage = len(serie[(serie >= mi) & (serie < ma)]) / total
+            if (percentage < 0.02 and splits_count) or previous_need_append:
+                final_splits[splits_count - 1] = (final_splits[splits_count - 1][0], ma)
+                previous_need_append = False
+                continue
+            elif percentage < 0.02:
+                previous_need_append = True
+            splits_count += 1
+            final_splits.append((mi, ma))
+
+        if len(final_splits) < 2:  # pragma no cover
             return
 
         splits.append(
             QuantitativeSplit(
                 field=field,
-                splits=_splits,
+                splits=final_splits,
             )
         )
         return splits
 
     @staticmethod
     def _get_interval(data: pd.Series) -> tuple[float, float]:
-        if len(data) < 2:
+        if len(data) <= 2:
             return data.min(), data.max()
         return (min(mean(data) - 3 * stdev(data), data.min()), max(mean(data) + 3 * stdev(data), data.max()))
 

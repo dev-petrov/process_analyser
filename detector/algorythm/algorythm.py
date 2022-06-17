@@ -1,5 +1,4 @@
 import json
-from decimal import Decimal
 from typing import Any, Union
 
 import numpy as np
@@ -70,9 +69,7 @@ class AnomalyDetector:
         float_columns = list(
             map(lambda x: x[0], filter(lambda x: x[1] in ["object", "float64"], df.dtypes.iteritems()))
         )
-        df = df.astype(dict([(field, float) for field in float_columns])).round(6)
-        cols_to_decimal = dict([(field, np.dtype(Decimal)) for field in float_columns])
-        return df.astype(cols_to_decimal)
+        return df.astype(dict([(field, float) for field in float_columns])).round(6)
 
     def save_model(self, path: str) -> None:
         data = {
@@ -88,7 +85,9 @@ class AnomalyDetector:
         self._splits = SplitsCollection.load_from_dict(data["splits"])
         self._normal_states = StatesCollection.from_dict(data["normal_states"], splits=self._splits)
 
-    def detect(self, data: pd.DataFrame, raise_exception=True) -> list[dict[str, Any]]:
+    def detect(
+        self, data: pd.DataFrame, raise_exception=True, find_closest_states=True, max_difference_to_skip=None
+    ) -> list[dict[str, Any]]:
         if not hasattr(self, "_normal_states") or not hasattr(self, "_splits"):
             raise ValueError('You should call "fit" or "load_model" first.')
         data = self._clean_df(data)
@@ -98,15 +97,22 @@ class AnomalyDetector:
 
         for i, state in data.iterrows():
             if state not in self._normal_states:
+                state = self._encode(data.loc[i])
+                if max_difference_to_skip is not None and self._normal_states.closest_states(
+                    state, max_distance=max_difference_to_skip
+                ):
+                    continue
                 anomalies.append(
                     {
                         "index": i,
                         "aggregated": dict_data[i],
                         "closest_states": list(
                             self._normal_states.closest_states_with_fields_differ(
-                                self._encode(data.loc[i]), max_distance=MAX_DISTANCE
+                                state, max_distance=MAX_DISTANCE
                             ).values()
-                        ),
+                        )
+                        if find_closest_states
+                        else [],
                     }
                 )
 

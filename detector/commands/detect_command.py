@@ -42,6 +42,7 @@ class DetectCommand(BaseCommand):
             loggers,
             verbose=verbose,
             detector_file=detector_file,
+            min_normal_state_difference=settings.MAX_DIFFERENCE_TO_SKIP,
         )
 
         print("Detector service started.")
