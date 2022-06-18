@@ -97,9 +97,11 @@ class AnomalyDetector:
 
         for i, state in data.iterrows():
             if state not in self._normal_states:
-                state = self._encode(data.loc[i])
-                if max_difference_to_skip is not None and self._normal_states.closest_states(
-                    state, max_distance=max_difference_to_skip
+                state, has_out_of_range = self._encode(data.loc[i], return_out_of_range=True)
+                if (
+                    not has_out_of_range
+                    and max_difference_to_skip is not None
+                    and self._normal_states.closest_states(state, max_distance=max_difference_to_skip)
                 ):
                     continue
                 anomalies.append(
@@ -108,11 +110,14 @@ class AnomalyDetector:
                         "aggregated": dict_data[i],
                         "closest_states": list(
                             self._normal_states.closest_states_with_fields_differ(
-                                state, max_distance=MAX_DISTANCE
+                                state,
+                                max_distance=MAX_DISTANCE,
+                                ignore_zero_difference=has_out_of_range,
                             ).values()
                         )
                         if find_closest_states
                         else [],
+                        "out_of_range": has_out_of_range,
                     }
                 )
 
@@ -125,16 +130,22 @@ class AnomalyDetector:
     def _columns(self) -> list[str]:
         return self._splits.as_columns
 
-    def _encode(self, row: pd.Series) -> tuple[int]:
+    def _encode(self, row: pd.Series, return_out_of_range=False) -> Union[tuple[int], tuple[tuple[int], bool]]:
         new_row = np.zeros(len(self._columns))
         next_index = 0
+        has_out_of_range = False
         for split in self._splits:
             curr_index_start = next_index
             next_index += len(split.splits)
             value = row[split.field]
-            value_index = split.get_value_position(value)
+            value_index, out_of_range = split.get_value_position(value)
+            if out_of_range:
+                has_out_of_range = True
             new_row[curr_index_start + value_index] = 1
-        return tuple(new_row)
+        if not return_out_of_range:
+            return tuple(new_row)
+        else:
+            return tuple(new_row), has_out_of_range
 
     def get_closest_states(self, state: Union[tuple[int], State], max_distance=3) -> StatesCollection:
         return self._normal_states.closest_states(state, max_distance=max_distance)

@@ -2,7 +2,7 @@ import abc
 from dataclasses import dataclass
 from decimal import Decimal
 from statistics import mean, stdev
-from typing import Generator, Optional, Union
+from typing import Generator, Union
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ class BaseSplit(abc.ABC):
     splits: list[Union[tuple[Decimal, Decimal], float, int]]
 
     @abc.abstractmethod
-    def get_value_position(self, value: Union[float, int]) -> Optional[int]:  # pragma: no cover
+    def get_value_position(self, value: Union[float, int]) -> tuple[int, bool]:  # pragma: no cover
         pass
 
     def get_value_from_vector(self, vector: str) -> int:
@@ -28,25 +28,33 @@ class BaseSplit(abc.ABC):
 
 @dataclass
 class QuantitativeSplit(BaseSplit):
-    def get_value_position(self, value: Union[float, int]) -> Optional[int]:
+    def get_value_position(self, value: Union[float, int]) -> tuple[int, bool]:
         index = None
+        out_of_range = False
         for i, (min, max) in enumerate(self.splits):
             if value >= min and value < max:
                 index = i
                 break
+        if index is None and value == self.splits[-1][-1]:
+            index = i
         if index is None:
             index = 0 if value < self.splits[0][0] else i
-        return index
+            out_of_range = True
+        return index, out_of_range
 
 
 class QualitativeSplit(BaseSplit):
-    def get_value_position(self, value: Union[float, int]) -> Optional[int]:
+    def get_value_position(self, value: Union[float, int]) -> tuple[int, bool]:
         index = None
+        out_of_range = False
         for i, qualitative_value in enumerate(self.splits):
             if value == qualitative_value:
                 index = i
                 break
-        return index
+        if index is None:
+            index = 0 if value < min(self.splits) else i
+            out_of_range = True
+        return index, out_of_range
 
 
 @dataclass

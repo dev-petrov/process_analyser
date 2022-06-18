@@ -142,7 +142,7 @@ def test_splits_collection():
     pytest.raises(ValueError, splits.__getitem__, "str_index").match("index should be int not str")
     pytest.raises(ValueError, splits.split_vector, "00").match("vector has invalid len")
 
-    assert splits._splits[-1].get_value_position(1) == 0
+    assert splits._splits[-1].get_value_position(1) == (0, False)
 
     assert str(splits) == (
         "[QuantitativeSplit(field='float', splits=[(-0.5126697208058462, 6.356331658291458),"

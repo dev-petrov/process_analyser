@@ -170,12 +170,22 @@ class StatesCollection:
 
         return self._states == __o
 
-    def closest_states(self, state: Union["State", tuple[int]], max_distance: int = 3) -> "StatesCollection":
+    def closest_states(
+        self, state: Union["State", tuple[int]], max_distance: int = 3, ignore_zero_difference=False
+    ) -> "StatesCollection":
         if isinstance(state, tuple):
             state = State(state)
 
+        def additional_statement(val):
+            if not ignore_zero_difference:
+                return True
+            return val ^ state > 0
+
         return StatesCollection(
-            sorted(filter(lambda s: s ^ state <= max_distance, self._states), key=lambda s: s ^ state),
+            sorted(
+                filter(lambda s: s ^ state <= max_distance and additional_statement(s), self._states),
+                key=lambda s: s ^ state,
+            ),
             splits=self._splits,
         )
 
@@ -185,9 +195,14 @@ class StatesCollection:
         return {st: st.fields_differ(state, self._splits) for st in self._states}
 
     def closest_states_with_fields_differ(
-        self, state: Union["State", tuple[int]], max_distance: int = 3
+        self,
+        state: Union["State", tuple[int]],
+        max_distance: int = 3,
+        ignore_zero_difference=False,
     ) -> dict[State, list[dict[str, Any]]]:
-        return self.closest_states(state, max_distance=max_distance).fields_differ(state)
+        return self.closest_states(
+            state, max_distance=max_distance, ignore_zero_difference=ignore_zero_difference
+        ).fields_differ(state)
 
     def to_dict(self) -> list[tuple[int]]:
         return [state.as_dict for state in self._states]
