@@ -66,7 +66,7 @@ def closest_raw_values():
 
     dttm = datetime.fromisoformat(dttm)
 
-    dttm_from = dttm - timedelta(minutes=Aggregator.period_length)
+    dttm_from = dttm - timedelta(minutes=Aggregator.period_length) + timedelta(seconds=2)
     dttm_to = dttm
 
     with session_scope() as session:
@@ -93,7 +93,7 @@ def closest_raw_values_excel():
 
     dttm = datetime.fromisoformat(dttm)
 
-    dttm_from = dttm - timedelta(minutes=Aggregator.period_length)
+    dttm_from = dttm - timedelta(minutes=Aggregator.period_length) + timedelta(seconds=2)
     dttm_to = dttm
 
     with session_scope() as session:
