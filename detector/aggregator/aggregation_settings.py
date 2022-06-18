@@ -29,7 +29,7 @@ AGGREGATION_SETTINGS = AggregationSetting(
     simple_agg=[
         SimpleAggregation(
             "avg",
-            ("cpu_percent", "memory_percent", "num_threads", "connections", "open_files"),
+            ("cpu_percent", "memory_percent", "num_threads"),
         ),
         SimpleAggregation(
             "sum",
@@ -41,6 +41,14 @@ AGGREGATION_SETTINGS = AggregationSetting(
         ),
     ],
     custom_agg=[
+        CustomAggregation(
+            "connections_avg",
+            lambda x: func.avg(x.connections).filter(x.connections != 0),
+        ),
+        CustomAggregation(
+            "open_files_avg",
+            lambda x: func.avg(x.open_files).filter(x.open_files != 0),
+        ),
         CustomAggregation(
             "idle_status_count",
             lambda x: func.count(x.status).filter(x.status.contains("idle")),
